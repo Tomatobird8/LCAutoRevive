@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCAutoRevive", "LCAutoRevive.csproj", "{62F856ED-9227-415A-AC66-21784F744D55}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62F856ED-9227-415A-AC66-21784F744D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62F856ED-9227-415A-AC66-21784F744D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62F856ED-9227-415A-AC66-21784F744D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62F856ED-9227-415A-AC66-21784F744D55}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CB1ECADF-8445-41E3-818D-8BB95EE1E5DB}
+	EndGlobalSection
+EndGlobal
