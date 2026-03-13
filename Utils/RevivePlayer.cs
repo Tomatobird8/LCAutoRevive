@@ -116,7 +116,7 @@ namespace LCAutoRevive.Utils
                     player.currentVoiceChatIngameSettings.voiceAudio.GetComponent<OccludeAudio>().overridingLowPass = false;
                 }
             }
-            RagdollGrabbableObject[] array = Object.FindObjectsOfType<RagdollGrabbableObject>(); // TODO: only remove the body of the revived player
+            RagdollGrabbableObject[] array = Object.FindObjectsOfType<RagdollGrabbableObject>();
             for (int j = 0; j < array.Length; j++)
             {
                 if (array[j].bodyID.Value != playerId)

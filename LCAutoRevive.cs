@@ -23,11 +23,6 @@ namespace LCAutoRevive
         {
             Logger = base.Logger;
             if (Instance == null) Instance = this;
-            
-            if (InputUtilsCompat.Enabled)
-            {
-                
-            }
 
             reviveDelay = Config.Bind<float>("General", "ReviveDelay", 15f, "How long should the player be dead until revived?").Value;
             waitForInput = Config.Bind<bool>("General", "WaitForInput", true, "Should player revival require pressing the revive button after timer is up?").Value;
