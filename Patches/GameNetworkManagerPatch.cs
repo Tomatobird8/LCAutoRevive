@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using GameNetcodeStuff;
+using HarmonyLib;
+using LCAutoRevive.Network;
 
 namespace LCAutoRevive.Patches
 {
@@ -9,12 +11,14 @@ namespace LCAutoRevive.Patches
         [HarmonyPostfix]
         private static void StartPostfix()
         {
-            Network.NetworkHandler.CreateAndRegisterPrefab();
+            NetworkHandler.CreateAndRegisterPrefab();
         }
 
+        [HarmonyPatch("Disconnect")]
+        [HarmonyPostfix]
         private static void DisconnectPostfix()
         {
-            Network.NetworkHandler.DespawnNetworkHandler();
+            NetworkHandler.DespawnNetworkHandler();
         }
     }
 }

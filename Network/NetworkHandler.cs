@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Unity.Netcode;
 using UnityEngine;
@@ -9,6 +10,10 @@ namespace LCAutoRevive.Network
     {
         private static GameObject? prefab = null;
         public static NetworkHandler Instance { get; private set; } = null!;
+
+        internal static List<int> PermaDeadPlayers = [];
+
+        internal static bool allPlayersDead;
 
         public static void CreateAndRegisterPrefab()
         {
@@ -50,6 +55,31 @@ namespace LCAutoRevive.Network
             Instance = this;
         }
 
+        public void ResetPermaDeadPlayers()
+        {
+            PermaDeadPlayers = [];
+            allPlayersDead = false;
+        }
+
+        public int GetPermaDeadPlayerCount(bool onPlayerDC)
+        {
+            return onPlayerDC ? PermaDeadPlayers.Count + 1 : PermaDeadPlayers.Count;
+        }
+
+        public bool AllPlayersPermaDead()
+        {
+            return allPlayersDead;
+        }
+
+        public void CheckIfAllPlayersDead(bool onPlayerDC)
+        {
+            if (GetPermaDeadPlayerCount(onPlayerDC) >= GameNetworkManager.Instance.connectedPlayers && !allPlayersDead)
+            {
+                allPlayersDead = true;
+                AllPlayersDeadClientRpc();
+            }
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void RevivePlayerServerRpc(int playerid)
         {
@@ -60,6 +90,38 @@ namespace LCAutoRevive.Network
         public void RevivePlayerClientRpc(int playerid)
         {
             Utils.RevivePlayer.ReiveDeadPlayer(playerid);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void PermaDeadPlayerServerRpc(int playerid)
+        {
+            if (!PermaDeadPlayers.Contains(playerid))
+            {
+                PermaDeadPlayers.Add(playerid);
+                LCAutoRevive.Logger.LogDebug($"Player {playerid} added to the permanently dead players list.");
+            }
+            CheckIfAllPlayersDead(false);
+        }
+
+        public void DisconnectPermaDeadPlayer(int playerid)
+        {
+            if (PermaDeadPlayers.Contains(playerid))
+            {
+                bool removed = PermaDeadPlayers.Remove(playerid);
+                LCAutoRevive.Logger.LogInfo($"Player {playerid} removed from list? {removed}");
+                CheckIfAllPlayersDead(false);
+            }
+            else
+            {
+                CheckIfAllPlayersDead(true);
+            }
+        }
+
+        [ClientRpc]
+        public void AllPlayersDeadClientRpc()
+        {
+            allPlayersDead = true;
+            StartOfRound.Instance.ShipLeaveAutomatically(false);
         }
 
         protected internal static uint GetHash(string value)

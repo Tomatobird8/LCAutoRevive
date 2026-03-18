@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
 using LCAutoRevive.Utils;
-using TMPro;
-using UnityEngine;
 
 namespace LCAutoRevive.Patches
 {

@@ -11,31 +11,37 @@ namespace LCAutoRevive.Utils
     internal class HUDHandler : MonoBehaviour
     {
         public static HUDHandler Instance { get; private set; } = null!;
-        GameObject deathCounterTextObject = null!;
+        internal GameObject deathCountDownTextObject = null!;
+        internal GameObject reviveCounterTextObject = null!;
+        internal TextMeshProUGUI text = null!;
+        internal TextMeshProUGUI reviveText = null!;
         internal bool isRunning = false;
         internal bool canRevive = false;
+        internal bool isPermaDead = false;
+        internal int reviveCount = 0;
+        private Color textColor = new(1f, 0.5647f, 0f, 1f);
 
         public void Awake()
         {
             Instance = this;
-            deathCounterTextObject = new("ReviveCountDownText");
-            deathCounterTextObject.transform.parent = HUDManager.Instance.gameOverAnimator.transform.Find("SpectateUI");
-            TextMeshProUGUI t = deathCounterTextObject.AddComponent<TextMeshProUGUI>();
+            deathCountDownTextObject = new("ReviveCountDownText");
+            deathCountDownTextObject.transform.parent = HUDManager.Instance.gameOverAnimator.transform.Find("SpectateUI");
+            text = deathCountDownTextObject.AddComponent<TextMeshProUGUI>();
             TMP_FontAsset? gameFont = HUDManager.Instance.EndOfRunStatsText.font;
-            if (gameFont != null) t.font = gameFont;
-            t.color = new Color(1f, 0.5647f, 0f, 1f);
-            t.alignment = TextAlignmentOptions.Bottom;
-            t.rectTransform.localScale = Vector3.one;
-            t.rectTransform.anchoredPosition = new Vector2(0f, -170f);
-            t.rectTransform.anchoredPosition3D = new Vector3(0f, -170f, 0f);
-            t.rectTransform.anchorMax = new Vector2(1f, 0f);
-            t.rectTransform.anchorMin = new Vector2(0f, 0f);
-            t.rectTransform.offsetMax = new Vector2(0f, -170f);
-            t.rectTransform.offsetMin = new Vector2(0f, -170f);
-            t.rectTransform.sizeDelta = new Vector2(0f, 0f);
-            t.fontSize = 24f;
-            t.enableWordWrapping = false;
-            t.text = "Initiating...";
+            if (gameFont != null) text.font = gameFont;
+            text.color = textColor;
+            text.alignment = TextAlignmentOptions.Bottom;
+            text.rectTransform.localScale = Vector3.one;
+            text.rectTransform.anchoredPosition = new Vector2(0f, -170f);
+            text.rectTransform.anchoredPosition3D = new Vector3(0f, -170f, 0f);
+            text.rectTransform.anchorMax = new Vector2(1f, 0f);
+            text.rectTransform.anchorMin = new Vector2(0f, 0f);
+            text.rectTransform.offsetMax = new Vector2(0f, -170f);
+            text.rectTransform.offsetMin = new Vector2(0f, -170f);
+            text.rectTransform.sizeDelta = new Vector2(0f, 0f);
+            text.fontSize = LCAutoRevive.fontSize;
+            text.enableWordWrapping = false;
+            text.text = EditText("Initiating...", false);
             if (InputUtilsCompat.Enabled && InputUtilsCompat.ReviveKey != null && LCAutoRevive.waitForInput)
             {
                 InputUtilsCompat.ReviveKey.performed += OnActionPerformed;
@@ -44,24 +50,45 @@ namespace LCAutoRevive.Utils
 
         public void OnActionPerformed(InputAction.CallbackContext context)
         {
-            if (!StartOfRound.Instance.shipIsLeaving && !StartOfRound.Instance.inShipPhase && canRevive && Application.isFocused)
+            if (StartOfRound.Instance.shipIsLeaving || StartOfRound.Instance.inShipPhase || !canRevive || !Application.isFocused)
             {
-                foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
+                return;
+            }
+            if (LCAutoRevive.reviveLimit > 0 && reviveCount >= LCAutoRevive.reviveLimit)
+            {
+                return;
+            }
+            foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if (player == StartOfRound.Instance.localPlayerController && player.isPlayerDead && !player.isTypingChat)
                 {
-                    if (player == StartOfRound.Instance.localPlayerController && player.isPlayerDead && !player.isTypingChat)
-                    {
-                        NetworkHandler.Instance.RevivePlayerServerRpc((int)player.playerClientId);
-                        canRevive = false;
-                    }
+                    NetworkHandler.Instance.RevivePlayerServerRpc((int)player.playerClientId);
+                    canRevive = false;
+                    reviveCount++;
+                    break;
                 }
             }
         }
 
         public void StartPlayerRevivalCountDown()
         {
-            if (!isRunning)
+            if (!isRunning && !isPermaDead)
             {
                 canRevive = false;
+                if (reviveCount >= LCAutoRevive.reviveLimit && LCAutoRevive.reviveLimit > 0)
+                {
+                    text.text = EditText("Out of revives", false);
+                    foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
+                    {
+                        if (player == StartOfRound.Instance.localPlayerController)
+                        {
+                            NetworkHandler.Instance.PermaDeadPlayerServerRpc((int)player.playerClientId);
+                            isPermaDead = true;
+                            break;
+                        }
+                    }
+                    return;
+                }
                 StartCoroutine(WaitForPlayerRevival());
             }
         }
@@ -69,8 +96,7 @@ namespace LCAutoRevive.Utils
         private IEnumerator WaitForPlayerRevival()
         {
             isRunning = true;
-            TextMeshProUGUI t = deathCounterTextObject.GetComponent<TextMeshProUGUI>();
-            float timeLeft = LCAutoRevive.reviveDelay >= 0f ? LCAutoRevive.reviveDelay : 0f;
+            float timeLeft = LCAutoRevive.reviveDelayPenalty >= 0f ? LCAutoRevive.reviveDelay + (LCAutoRevive.reviveDelayPenalty * reviveCount) : LCAutoRevive.reviveDelay;
             float interval = 0.1f;
             while (timeLeft >= 0f)
             {
@@ -82,22 +108,23 @@ namespace LCAutoRevive.Utils
                 }
                 if (StartOfRound.Instance.shipIsLeaving || StartOfRound.Instance.inShipPhase)
                 {
-                    t.text = "";
+                    text.text = EditText("",false);
                     isRunning = false;
+                    reviveCount = 0;
                     yield break;
                 }
                 interval = 0.1f;
                 timeLeft -= 0.1f + (interval - 0.1f) + Time.deltaTime;
-                t.text = $"Reviving... {Mathf.CeilToInt(timeLeft)}";
+                text.text = EditText($"Reviving... {Mathf.CeilToInt(timeLeft)}", true);
             }
             canRevive = true;
             if (InputUtilsCompat.Enabled && InputUtilsCompat.ReviveKey != null && LCAutoRevive.waitForInput)
             {
-                t.text = $"Press {InputUtilsCompat.ReviveKey.controls[0].displayName} to revive";
+                text.text = EditText($"Press {InputUtilsCompat.ReviveKey.controls[0].displayName} to revive", true);
             }
             else
             {
-                t.text = $"Reviving now";
+                text.text = EditText("Reviving now", true);
                 if (!StartOfRound.Instance.shipIsLeaving && !StartOfRound.Instance.inShipPhase)
                 {
                     foreach (PlayerControllerB player in StartOfRound.Instance.allPlayerScripts)
@@ -106,12 +133,36 @@ namespace LCAutoRevive.Utils
                         {
                             NetworkHandler.Instance.RevivePlayerServerRpc((int)player.playerClientId);
                             canRevive = false;
+                            reviveCount++;
+                            break;
                         }
                     }
                 }
             }
 
             isRunning = false;
+        }
+
+        internal string EditText(string s, bool showRevives)
+        {
+            string newText = s;
+
+            if (LCAutoRevive.reviveLimit > reviveCount && showRevives)
+            {
+                newText += $"\nRevives left: {LCAutoRevive.reviveLimit - reviveCount}";
+            }
+            return newText;
+        }
+
+        internal void ShipLeave()
+        {
+            canRevive = false;
+            reviveCount = 0;
+            if (text == null)
+            {
+                return;
+            }
+            text.text = EditText("",false);
         }
     }
 }

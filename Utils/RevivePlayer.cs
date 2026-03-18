@@ -89,6 +89,7 @@ namespace LCAutoRevive.Utils
                     TimeOfDay.Instance.DisableAllWeather(false);
                     StartOfRound.Instance.SetSpectateCameraToGameOverMode(false, player);
                     HUDManager.Instance.audioListenerLowPass.enabled = false;
+                    player.sprintMeter = 1f;
                 }
                 else
                 {
