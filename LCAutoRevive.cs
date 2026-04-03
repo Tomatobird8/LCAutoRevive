@@ -28,7 +28,7 @@ namespace LCAutoRevive
             reviveDelay = Config.Bind<float>("General", "ReviveDelay", 15f, "Time until reviving is allowed.").Value;
             reviveDelayPenalty = Config.Bind<float>("General", "ReviveDelayPenalty", 0f, "Increase in revive delay per death. 0 to disable.").Value;
             reviveLimit = Config.Bind<int>("General", "ReviveLimit", 0, "Amount of revives allowed per day. 0 to disable.").Value;
-            waitForInput = Config.Bind<bool>("General", "WaitForInput", true, "Should player revival require pressing the revive button after timer is up?").Value;
+            waitForInput = Config.Bind<bool>("General", "WaitForInput", true, "Should player revival require pressing the revive button after timer is up? Only works when LethalCompanyInputUtils is installed.").Value;
             preventShipLeave = Config.Bind<bool>("General", "PreventShipLeave", true, "Should ship leaving be prevented when all players are dead? Ship will leave anyway if no players have revives left.").Value;
             fontSize = Config.Bind<float>("General", "FontSize", 24f, "Size of the revive timer text.").Value;
 

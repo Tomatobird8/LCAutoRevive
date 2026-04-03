@@ -24,6 +24,7 @@ namespace LCAutoRevive.Utils
                 player.gameplayCamera.transform.localEulerAngles = new Vector3(player.gameplayCamera.transform.localEulerAngles.x, 0f, player.gameplayCamera.transform.localEulerAngles.z);
                 player.inVehicleAnimation = false;
             }
+            player.overridePoisonValue = false;
             player.disableMoveInput = false;
             player.ResetZAndXRotation();
             player.thisController.enabled = true;
@@ -35,6 +36,7 @@ namespace LCAutoRevive.Utils
             if (player.isPlayerDead)
             {
                 player.isPlayerDead = false;
+                player.enemyWaitingForBodyRagdoll = null;
                 player.isPlayerControlled = true;
                 player.isInElevator = true;
                 player.isInHangarShipRoom = true;
@@ -74,6 +76,7 @@ namespace LCAutoRevive.Utils
                 StartOfRound.Instance.allPlayersDead = false;
                 if (player.IsOwner)
                 {
+                    HUDManager.Instance.SetCracksOnVisor(100f);
                     HUDManager.Instance.gasHelmetAnimator.SetBool("gasEmitting", value: false);
                     player.hasBegunSpectating = false;
                     HUDManager.Instance.RemoveSpectateUI();
@@ -83,6 +86,7 @@ namespace LCAutoRevive.Utils
                     player.hinderedMultiplier = 1f;
                     player.isMovementHindered = 0;
                     player.sourcesCausingSinking = 0;
+                    StartOfRound.Instance.SendChangedWeightEvent();
                     player.reverbPreset = StartOfRound.Instance.shipReverb;
                     HUDManager.Instance.HideHUD(false);
                     SoundManager.Instance.earsRingingTimer = 0f;
@@ -120,7 +124,7 @@ namespace LCAutoRevive.Utils
             RagdollGrabbableObject[] array = Object.FindObjectsOfType<RagdollGrabbableObject>();
             for (int j = 0; j < array.Length; j++)
             {
-                if (array[j].bodyID.Value != playerId)
+                if (array[j].bodyID != playerId)
                 {
                     continue;
                 }
