@@ -121,6 +121,27 @@ namespace LCAutoRevive.Utils
                     player.currentVoiceChatIngameSettings.voiceAudio.GetComponent<OccludeAudio>().overridingLowPass = false;
                 }
             }
+            CadaverGrowthAI[] cadavers = Object.FindObjectsOfType<CadaverGrowthAI>(); // new check
+            for (int i = 0; i < cadavers.Length; i++)
+            {
+                if (cadavers[i].playerInfections[playerId] != null)
+                {
+                    cadavers[i].playerInfections[playerId].infectionMeter = 0f;
+                    cadavers[i].playerInfections[playerId].burstMeter = 0f;
+                    cadavers[i].playerInfections[playerId].infected = false;
+                    cadavers[i].playerInfections[playerId].severe = false;
+                    cadavers[i].playerInfections[playerId].emittingSpores = false;
+                    StartOfRound.Instance.allPlayerScripts[playerId].overridePoisonValue = false;
+                    if (cadavers[i].playerInfections[playerId].backFlowerRenderers != null)
+                    {
+                        for (int ii = 0; ii < cadavers[i].playerInfections[playerId].backFlowerRenderers.Length; ii++)
+                        {
+                            cadavers[i].playerInfections[playerId].backFlowerRenderers[ii].enabled = false;
+                        }
+                        cadavers[i].playerInfections[playerId].backFlowersScanNode.SetActive(false);
+                    }
+                }
+            }
             RagdollGrabbableObject[] array = Object.FindObjectsOfType<RagdollGrabbableObject>();
             for (int j = 0; j < array.Length; j++)
             {
@@ -147,13 +168,29 @@ namespace LCAutoRevive.Utils
                 else if (array[j].isHeld && array[j].playerHeldBy != null)
                 {
                     array[j].playerHeldBy.DropAllHeldItems();
-                    break;
+                    if (StartOfRound.Instance.IsServer) // Is this necessary?
+                    {
+                        if (array[j].NetworkObject.IsSpawned)
+                        {
+                            array[j].NetworkObject.Despawn();
+                            break;
+                        }
+                        else
+                        {
+                            Object.Destroy(array[j].gameObject);
+                            break;
+                        }
+                    }
                 }
             }
             DeadBodyInfo[] array2 = Object.FindObjectsOfType<DeadBodyInfo>(includeInactive: true);
             for (int k = 0; k < array2.Length; k++)
             {
-                Object.Destroy(array2[k].gameObject);
+                if (array2[k].playerObjectId == playerId) // Only destroy the reviving player body
+                {
+                    Object.Destroy(array2[k].gameObject);
+                    break;
+                }
             }
             StartOfRound.Instance.livingPlayers = StartOfRound.Instance.connectedPlayersAmount + 1;
             StartOfRound.Instance.UpdatePlayerVoiceEffects();
