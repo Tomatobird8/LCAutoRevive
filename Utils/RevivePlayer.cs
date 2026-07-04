@@ -136,9 +136,11 @@ namespace LCAutoRevive.Utils
                     {
                         for (int ii = 0; ii < cadavers[i].playerInfections[playerId].backFlowerRenderers.Length; ii++)
                         {
-                            cadavers[i].playerInfections[playerId].backFlowerRenderers[ii].enabled = false;
+                            if (cadavers[i].playerInfections[playerId].backFlowerRenderers[ii] != null)
+                                cadavers[i].playerInfections[playerId].backFlowerRenderers[ii].enabled = false;
                         }
-                        cadavers[i].playerInfections[playerId].backFlowersScanNode.SetActive(false);
+                        if (cadavers[i].playerInfections[playerId].backFlowersScanNode != null)
+                            cadavers[i].playerInfections[playerId].backFlowersScanNode.SetActive(false);
                     }
                 }
             }
