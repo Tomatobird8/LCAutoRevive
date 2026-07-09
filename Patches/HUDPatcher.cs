@@ -1,16 +1,15 @@
 ﻿using HarmonyLib;
 using LCAutoRevive.Utils;
 
-namespace LCAutoRevive.Patches
+namespace LCAutoRevive.Patches;
+
+[HarmonyPatch(typeof(HUDManager))]
+internal class HUDPatcher
 {
-    [HarmonyPatch(typeof(HUDManager))]
-    internal class HUDPatcher
+    [HarmonyPatch(nameof(HUDManager.Start))]
+    [HarmonyPostfix]
+    internal static void Start_Postfix(HUDManager __instance)
     {
-        [HarmonyPatch("Start")]
-        [HarmonyPostfix]
-        internal static void SpectateUIStartPatch(HUDManager __instance)
-        {
-            __instance.gameOverAnimator.gameObject.AddComponent<HUDHandler>();
-        }
+        __instance.gameOverAnimator.gameObject.AddComponent<HUDHandler>();
     }
 }
