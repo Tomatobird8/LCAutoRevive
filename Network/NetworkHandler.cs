@@ -80,19 +80,19 @@ internal class NetworkHandler : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server)]
     public void RevivePlayerServerRpc(int playerid)
     {
         RevivePlayerClientRpc(playerid);
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.Everyone)]
     public void RevivePlayerClientRpc(int playerid)
     {
         Utils.RevivePlayer.ReiveDeadPlayer(playerid);
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server)]
     public void PermaDeadPlayerServerRpc(int playerid)
     {
         if (!PermaDeadPlayers.Contains(playerid))
@@ -117,7 +117,7 @@ internal class NetworkHandler : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.Everyone)]
     public void AllPlayersDeadClientRpc()
     {
         allPlayersDead = true;
