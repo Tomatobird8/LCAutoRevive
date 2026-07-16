@@ -17,14 +17,16 @@ internal class StartOfRoundPatcher
 
     [HarmonyPatch(nameof(StartOfRound.ShipLeaveAutomatically))]
     [HarmonyPrefix]
-    internal static bool ShipLeaveAutomatically_Prefix(StartOfRound __instance, ref bool leavingOnMidnight)
+    internal static bool ShipLeaveAutomatically_Prefix(StartOfRound __instance, bool leavingOnMidnight)
     {
+        LCAutoRevive.Logger.LogDebug($"leavingOnMidnight: {leavingOnMidnight} AllPlayersPermaDead(): {NetworkHandler.Instance.AllPlayersPermaDead()} StartOfRound.Instance.allPlayersDead: {__instance.allPlayersDead}");
         if (!LCAutoRevive.preventShipLeave || NetworkHandler.Instance.AllPlayersPermaDead())
         {
             return true;
         }
         if (!leavingOnMidnight)
         {
+            LCAutoRevive.Logger.LogDebug("Setting allPlayersDead to false.");
             __instance.allPlayersDead = false;
             return false;
         }
@@ -33,7 +35,7 @@ internal class StartOfRoundPatcher
 
     [HarmonyPatch(nameof(StartOfRound.OnPlayerDC))]
     [HarmonyPostfix]
-    internal static void OnPlayerDC_PostFix(StartOfRound __instance, ref int playerObjectNumber, ref ulong clientId)
+    internal static void OnPlayerDC_PostFix(StartOfRound __instance, int playerObjectNumber, ulong clientId)
     {
         if (__instance.allPlayerObjects[playerObjectNumber].GetComponent<PlayerControllerB>().disconnectedMidGame && __instance.IsServer)
         {

@@ -150,7 +150,7 @@ internal class HUDHandler : MonoBehaviour
 
         if (LCAutoRevive.reviveLimit > reviveCount && showRevives)
         {
-            newText += LCAutoRevive.revivesLeftText.Replace(LCAutoRevive.replacementSymbol, (LCAutoRevive.reviveLimit - reviveCount).ToString());
+            newText += $"\n{LCAutoRevive.revivesLeftText.Replace(LCAutoRevive.replacementSymbol, (LCAutoRevive.reviveLimit - reviveCount).ToString())}";
         }
         return newText;
     }

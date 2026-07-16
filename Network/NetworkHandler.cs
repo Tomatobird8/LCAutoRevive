@@ -73,7 +73,8 @@ internal class NetworkHandler : NetworkBehaviour
 
     public void CheckIfAllPlayersDead(bool onPlayerDC)
     {
-        if (GetPermaDeadPlayerCount(onPlayerDC) >= GameNetworkManager.Instance.connectedPlayers && !allPlayersDead)
+        LCAutoRevive.Logger.LogDebug($"onPlayerDC: {onPlayerDC} permaDeadPlayers.Count: {PermaDeadPlayers.Count} connectedPlayers: {GameNetworkManager.Instance.connectedPlayers}");
+        if (GetPermaDeadPlayerCount(onPlayerDC) >= (onPlayerDC ? GameNetworkManager.Instance.connectedPlayers + 1 : GameNetworkManager.Instance.connectedPlayers) && !allPlayersDead)
         {
             allPlayersDead = true;
             AllPlayersDeadClientRpc();
@@ -121,6 +122,7 @@ internal class NetworkHandler : NetworkBehaviour
     public void AllPlayersDeadClientRpc()
     {
         allPlayersDead = true;
+        StartOfRound.Instance.allPlayersDead = true;
         StartOfRound.Instance.ShipLeaveAutomatically(false);
     }
 
