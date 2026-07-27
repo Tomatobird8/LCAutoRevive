@@ -194,6 +194,10 @@ public static class RevivePlayer
                 break;
             }
         }
+        if (GameNetworkManager.Instance.localPlayerController.isPlayerDead)
+        {
+            HUDManager.Instance.UpdateBoxesSpectateUI();
+        }
         StartOfRound.Instance.livingPlayers = StartOfRound.Instance.connectedPlayersAmount + 1;
         StartOfRound.Instance.UpdatePlayerVoiceEffects();
     }
