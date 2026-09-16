@@ -19,6 +19,7 @@ public class LCAutoRevive : BaseUnityPlugin
     internal static float fontSize;
     internal static float reviveDelayPenalty;
     internal static int reviveLimit;
+    internal static bool reviveOnlyCollectedBody;
 
     internal static string replacementSymbol = "$";
     internal static string reviveTimerText = "Reviving... $";
@@ -26,6 +27,8 @@ public class LCAutoRevive : BaseUnityPlugin
     internal static string revivingNowText = "Reviving now";
     internal static string revivesLeftText = "Revives left: $";
     internal static string outOfRevivesText = "Out of revives";
+    internal static string bodyNotInShipText = "Body not on ship";
+    internal static string bodyNotFoundText = "Body missing";
 
     private void Awake()
     {
@@ -37,6 +40,7 @@ public class LCAutoRevive : BaseUnityPlugin
         reviveLimit = Config.Bind<int>("General", "ReviveLimit", 0, "Amount of revives allowed per day. 0 to disable.").Value;
         waitForInput = Config.Bind<bool>("General", "WaitForInput", true, "Should player revival require pressing the revive button after timer is up? Only works when LethalCompanyInputUtils is installed.").Value;
         preventShipLeave = Config.Bind<bool>("General", "PreventShipLeave", true, "Should ship leaving be prevented when all players are dead? Ship will leave anyway if no players have revives left.").Value;
+        reviveOnlyCollectedBody = Config.Bind<bool>("General", "ReviveOnlyCollectedBody", false, "Should reviving only be allowed if the player body is in ship?").Value;
 
         fontSize = Config.Bind<float>("UI", "FontSize", 24f, "Size of the revive timer text.").Value;
         replacementSymbol = Config.Bind<string>("UI", "ReplacementSymbol", "$", "Which symbol should be replaced with a variable provided for the text?").Value;
@@ -45,6 +49,8 @@ public class LCAutoRevive : BaseUnityPlugin
         revivingNowText = Config.Bind<string>("UI", "RevivingNowText", "Reviving now", "Text for reviving now.").Value;
         revivesLeftText = Config.Bind<string>("UI", "RevivesLeftText", "Revives left: $", "Text for how many revives are left. The variable is the amount of revives left.").Value;
         outOfRevivesText = Config.Bind<string>("UI", "OutOfRevivesText", "Out of revives", "Text displayed when you have no revives left.").Value;
+        bodyNotInShipText = Config.Bind<string>("UI", "BodyNotOnShipText", "Body not on ship", "Text displayed when ReviveOnlyCollectedBody setting is true and the body is not yet on ship.").Value;
+        bodyNotFoundText = Config.Bind<string>("UI", "BodyNotFoundText", "Body missing", "Text displayed when ReviveOnlyCollectedBody setting is true and the body was nowhere to be found.").Value;
 
         Patch();
 

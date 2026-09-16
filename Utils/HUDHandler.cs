@@ -117,6 +117,38 @@ internal class HUDHandler : MonoBehaviour
             timeLeft -= 0.1f + (interval - 0.1f) + Time.deltaTime;
             text.text = EditText(LCAutoRevive.reviveTimerText, true, Mathf.CeilToInt(timeLeft).ToString());
         }
+        if (LCAutoRevive.reviveOnlyCollectedBody)
+        {
+            text.text = EditText(LCAutoRevive.bodyNotInShipText, true);
+            bool waitingForBodyCollected = true;
+            DeadBodyInfo? playerBody = null;
+            while (waitingForBodyCollected)
+            {
+                if (playerBody == null)
+                {
+                    RagdollGrabbableObject[] array = FindObjectsOfType<RagdollGrabbableObject>();
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        if (array[i].bodyID != (int)StartOfRound.Instance.localPlayerController.playerClientId) continue;
+                        playerBody = array[i].ragdoll;
+                    }
+                }
+                if (playerBody == null)
+                {
+                    text.text = EditText(LCAutoRevive.bodyNotFoundText, false);
+                    NetworkHandler.Instance.PermaDeadPlayerServerRpc((int)StartOfRound.Instance.localPlayerController.playerClientId);
+                    isPermaDead = true;
+                    isRunning = false;
+                    yield break;
+                }
+                if (playerBody.isInShip)
+                {
+                    waitingForBodyCollected = false;
+                    continue;
+                }
+                yield return new WaitForSeconds(0.5f);
+            }
+        }
         canRevive = true;
         if (InputUtilsCompat.Enabled && InputUtilsCompat.ReviveKey != null && LCAutoRevive.waitForInput)
         {

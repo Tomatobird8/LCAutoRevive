@@ -29,7 +29,7 @@ internal class NetworkHandler : NetworkBehaviour
         prefab.AddComponent<NetworkHandler>();
         NetworkManager.Singleton.AddNetworkPrefab(prefab);
 
-        LCAutoRevive.Logger.LogInfo("Prefab changes done.");
+        LCAutoRevive.Logger.LogInfo("Network prefab changes done.");
     }
 
     public static void SpawnNetworkHandler()
